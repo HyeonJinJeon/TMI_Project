@@ -1,8 +1,28 @@
 <template>
   <div>
+    <div>
+      <b-navbar toggleable="lg" type="dark" style="background-color: #a3b2d6; height: 55px">
+        <b-icon v-b-toggle.sidebar-1 id="sidebar_openBtn" icon="list" font-scale="1.5" style="margin-left: 30px; color: white;" class="my-2 my-sm-0"></b-icon>
+
+        <b-navbar-brand  style="margin-left: 43%; font-weight: bold; font-size: 45px; font-family: 'Nanum Pen Script', cursive;" href="#">T . M . I</b-navbar-brand>
+
+        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+
+        <b-collapse id="nav-collapse" is-nav>
+
+          <!-- Right aligned nav items -->
+          <b-navbar-nav class="ml-auto">
+            <b-nav-form v-on:keypress.enter.prevent=searchGeo(geo)>
+              <b-form-input v-model="geo" size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
+              <b-button @click="searchGeo(geo)" size="sm" class="my-2 my-sm-0" variant="outline-white">Search</b-button>
+            </b-nav-form>
+          </b-navbar-nav>
+        </b-collapse>
+      </b-navbar>
+    </div>
     <OtherSideBar @changeLat="center.lat=$event" @changeLng="center.lng=$event" :centerLat="centerLat" :centerLng="centerLng"></OtherSideBar>
 
-    <b-button v-b-toggle.sidebar-1 id="sidebar_openBtn" class = "sideOpenBtn">sidebar open</b-button>
+    <!--    <b-button v-b-toggle.sidebar-1 id="sidebar_openBtn" class = "sideOpenBtn">sidebar open</b-button>-->
     <vue-daum-map
         :appKey="appkey"
         :center.sync="center"
@@ -13,22 +33,17 @@
         style="width:100%;height:100vh;"
     >
     </vue-daum-map>
-    <input class="searchBtn " v-model="geo">
-    <button @click="searchGeo(geo)" class="moveBtn btn-mdb-color" >이동</button>
 
   </div>
 </template>
 
 <script>
-
-
 import OtherSideBar from "@/components/OtherSideBar.vue";
 import {firebase} from '@/firebase/firebaseConfig';
 import VueDaumMap from "vue-daum-map";
-
 export default {
   name: 'mainMap',
-  components: {VueDaumMap, OtherSideBar},
+  components: {OtherSideBar, VueDaumMap},
   data() {
     return {
       appkey: 'f486e714c436dbd1f7761ca8d96e43c8',
@@ -59,7 +74,6 @@ export default {
     onLoad(map, daum) {
       this.map = map;
       this.maps = daum.map
-
       // let marker = new kakao.maps.Marker({
       //   position: map.getCenter()
       // });
@@ -79,19 +93,14 @@ export default {
       // });
     },
     searchGeo(geo){
-
       const ps = new kakao.maps.services.Places();
       ps.keywordSearch(geo, placesSearchCB);
       const map=this.map
-
       function placesSearchCB (data,status) {
-
         if (status === kakao.maps.services.Status.OK) {
-
           // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
           // LatLngBounds 객체에 좌표를 추가합니다
           const bounds = new kakao.maps.LatLngBounds();
-
           for (var i=0; i<data.length; i++) {
             bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
           }
@@ -100,7 +109,6 @@ export default {
         }
       }
     },
-
     async getDataList() {
       const self = this;
       const db = firebase.firestore();
@@ -124,7 +132,6 @@ export default {
       const self = this;
 // 마커가 표시될 위치입니다
       const markerPosition = new kakao.maps.LatLng(lat, long);
-
       console.log(markerPosition)
       // const markerImageUrl = '/images/marker2.png',
       //     markerImageSize = new this.maps.Size(20, 20), // 마커 이미지의 크기
@@ -133,7 +140,6 @@ export default {
       //     };
       //
       // const markerImage = new this.maps.MarkerImage(markerImageUrl, markerImageSize, markerImageOptions);
-
 // 마커를 생성합니다
       const marker = new kakao.maps.Marker({
         map: self.map,
@@ -144,7 +150,6 @@ export default {
     },
   },
   watch:{
-
   }
 }
 </script>
@@ -176,5 +181,4 @@ export default {
   left: 60%;
   top: 2%;
 }
-
 </style>
