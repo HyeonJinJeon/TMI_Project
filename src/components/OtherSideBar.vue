@@ -3,9 +3,9 @@
     <b-sidebar class="mainSide" id="sidebar-1" shadow>
       <div class="px-3 py-2">
         <div>
-          <h3>
+          <h4>
             {{userInfo.nickName}}'s Map
-          </h3>
+          </h4>
         </div>
         <div>
           <table class="table " border="1" style="margin-left: auto; margin-right: auto;">
@@ -37,12 +37,10 @@
 </template>
 
 <script>
-
 import {firebase} from "@/firebase/firebaseConfig";
 import AddMemorySideBar from '@/components/AddMemorySideBar.vue';
 import MyPage from '@/components/MyPage.vue';
 // import VueDaumMap from 'vue-daum-map';
-
 export default {
   name: 'mainSideBar',
   components: {AddMemorySideBar, MyPage},
@@ -119,11 +117,9 @@ export default {
           let year = date.getFullYear()
           let month = date.getMonth() + 1
           let day = date.getDate()
-
           if (notFullYear) year = year.toString().slice(2, 4)
           if (month < 10) month = `0${month}`
           if (day < 10) day = `0${day}`
-
           return `${year}${separated}${month}${separated}${day}`
         } else return '';
       }
@@ -145,7 +141,6 @@ export default {
       return this.long1
     }
   }
-
 }
 </script>
 
@@ -169,6 +164,4 @@ export default {
   left:120px;
   top: 90%;
 }
-
 </style>
-
