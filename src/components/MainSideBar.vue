@@ -3,9 +3,9 @@
     <b-sidebar id="sidebar-1" shadow>
       <div class="px-3 py-2">
         <div>
-          <h3>
+          <h4>
             {{userInfo.nickName}}'s Map
-          </h3>
+          </h4>
         </div>
 
         <div>
@@ -27,6 +27,7 @@
           추억을 남겨보세요
         </p>
       </div>
+      <!--      <b-button v-b-toggle.sidebar-2 id="sidebar_openBtn">subPage</b-button>-->
       <b-icon v-b-toggle.sidebar-2 id="sidebar_openBtn" icon="pencil-fill" font-scale="1.5" class="goMypage"></b-icon>
       <b-icon v-b-toggle.sidebar-3 id="sidebar_openBtn" icon="plus-lg" font-scale="1.5" class="goAddMemory"></b-icon>
       <button @click="logout" class="logOutBtn btn-outline-light-blue" >
@@ -39,12 +40,9 @@
 </template>
 
 <script>
-
 import {firebase} from "@/firebase/firebaseConfig";
-import AddMemorySideBar from '@/components/AddMemorySideBar.vue';
-import MyPage from '@/components/MyPage.vue';
-// import VueDaumMap from 'vue-daum-map';
-
+import AddMemorySideBar from "@/components/AddMemorySideBar.vue";
+import MyPage from "@/components/MyPage.vue";
 export default {
   name: 'mainSideBar',
   components: {AddMemorySideBar, MyPage},
@@ -67,6 +65,7 @@ export default {
     init() {
       const self = this;
       self.getData();
+      self.getDatalist();
     },
     changeCenter(){
       this.$emit("changeCenter", this.memoryList.marker._lat)
@@ -79,7 +78,6 @@ export default {
           .get()
           .then((snapshot) => {
             self.userInfo = snapshot.data();
-            setTimeout(() => {this.getDatalist()},1);
           })
     },
     getDatalist() {
@@ -87,33 +85,31 @@ export default {
       const db = firebase.firestore();
       console.log(self.whatData)
       db.collection("memory")
-      .where("userId",'==',self.$store.state.user.uid)
-      .get()
-      .then((querySnapshot) => {
-        if (querySnapshot.size === 0) {
-          self.whatData = true
-          console.log(self.whatData)
-        }
-        querySnapshot.forEach((memory) => {
-          const _data = memory.data();
-          _data.id = memory.id
-          const date = new Date(_data.date.seconds * 1000);
-          _data.date = getDate(date);
-          self.memoryList.push(_data);
-          // console.log(self.memoryList)
-          // console.log(self.memore)
-          });
-      })
+          .where("userId",'==',self.$store.state.user.uid)
+          .get()
+          .then((querySnapshot) => {
+            if (querySnapshot.size === 0) {
+              self.whatData = true
+              console.log(self.whatData)
+            }
+            querySnapshot.forEach((memory) => {
+              const _data = memory.data();
+              _data.id = memory.id
+              const date = new Date(_data.date.seconds * 1000);
+              _data.date = getDate(date);
+              self.memoryList.push(_data);
+              // console.log(self.memoryList)
+              // console.log(self.memore)
+            });
+          })
       const getDate = (date, separated = '-', notFullYear = false) => {
         if (date instanceof Date) {
           let year = date.getFullYear()
           let month = date.getMonth() + 1
           let day = date.getDate()
-
           if (notFullYear) year = year.toString().slice(2, 4)
           if (month < 10) month = `0${month}`
           if (day < 10) day = `0${day}`
-
           return `${year}${separated}${month}${separated}${day}`
         } else return '';
       }
@@ -127,15 +123,6 @@ export default {
     lat: Number,
     long: Number
   },
-  computed:{
-    moveLat1: function (){
-      return this.lat1
-    },
-    moveLong1: function (){
-      return this.long1
-    }
-  }
-
 }
 </script>
 
@@ -160,4 +147,3 @@ export default {
   top: 90%;
 }
 </style>
-
