@@ -8,11 +8,19 @@
         <label for="content" class="grey-text" style="margin:10px">내용</label>
         <input v-model="content" type="textarea" id="content" class="form-control" >
         <hr>
+        <label for="content" class="grey-text" style="margin:10px">이미지 저장</label> <br>
+        <input type="file" class="form-control" ref="fileInput" accept="image/jpeg, image/jpg" id="inputGroupFile02"  multiple>
+        <hr>
+        <div>
+          <label for="example-datepicker" class="grey-text" style="margin:10px" >날짜 선택</label>
+          <b-datepicker id="example-datepicker" v-model="date" class="mb-2 dateSelect"></b-datepicker>
+          {{date}}
+        </div>
+        <hr>
         <label for="content" class="grey-text" style="margin:10px">위치 지정하기</label>
         <input v-model="geo" class="form-control" type="text" placeholder="Search" aria-label="Search" />
         <b-button  @click="searchGeo(geo)" class="moveBtn btn-mdb-color" >이동</b-button>
 
-<!--        <label for="content" class="grey-text" style="margin:10px">이미지 저장</label> <br>-->
         <vue-daum-map id="addMap"
                       :appKey="appkey"
                       :center.sync="center"
@@ -23,8 +31,7 @@
                       @load="onLoad"
         >
         </vue-daum-map>
-        <hr>
-        <b-button @click="addMemory">저장하기</b-button>
+        <b-button @click="onUpload()">저장하기</b-button>
       </div>
     </b-sidebar>
   </div>
@@ -52,6 +59,7 @@ export default {
       markers: [],
       markersInMap: [],
       geo: '',
+      date: '',
       fbCollection: 'memory',
       userInfo: {},
       title: '',
@@ -62,7 +70,7 @@ export default {
       lat: 0.0,
       long: 0.0,
       caption : '',
-      img1: '',
+      img1: [],
       imageData: null
     }
   },
@@ -85,19 +93,19 @@ export default {
             self.userInfo = snapshot.data();
           })
     },
-    addMemory(){
+    addMemory() {
       const self = this;         // self를 쓰는 이유는 바깥의 this들과 햇갈리지 않기 위해서
       const db = firebase.firestore();
-      const now = new Date();
+      const timestamp = new Date(self.date + " 00:00:00");
       const marker = new firebase.firestore.GeoPoint(this.lat, this.long);
       // const firestore.GeoPoint = require('geopoint')
       const _data = {            // data()에 있는 데이터가 바로 들어갈 수 없다.
         title: self.title,
         content: self.content,
-        date: now,
+        date: timestamp,
         userId: self.$store.state.user.uid,
         // marker: self.marker,
-        image:[],
+        image: self.img1,
         marker: marker,
         user: {
           name: this.userInfo.name,
@@ -115,6 +123,39 @@ export default {
             alert("저장에 실패했습니다.")
           })
     },
+    // previewImage(event) {
+    //   this.uploadValue = 0;
+    //   this.img1 = null;
+    //   this.imageData = event.target.files[0];
+    //   console.log(this.imageData)
+    //   // this.onUpload()
+    // },
+    onUpload() {
+      const files = this.$refs.fileInput.files
+      for (let i = 0; i < files.length; i++) {
+        this.imageData = files[i]
+        const storageRef = firebase
+            .storage()
+            .ref(`${this.currentUser}`)
+            .child(`${this.imageData.name}`)
+            .put(this.imageData);
+        storageRef.on(`state_changed`, snapshot => {
+              this.uploadValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            }, error => {
+              console.log(error.message);
+            }, () => {
+              this.uploadValue = 100;
+              storageRef.snapshot.ref.getDownloadURL().then((url) => {
+                this.img1.push(url);
+                if(i == files.length-1){
+                  this.addMemory();
+                }
+                console.log(this.img1);
+              });
+            }
+        );
+      }
+    },
     onLoad(map, daum) {
       this.map = map;
       this.maps = daum.map
@@ -128,21 +169,21 @@ export default {
         // 마커 위치를 클릭한 위치로 옮깁니다
         marker.setPosition(latlng);
         // this.changeLatLng();
-        this.lat  = latlng.getLat();
+        this.lat = latlng.getLat();
         this.long = latlng.getLng();
         console.log(this.lat)
       });
     },
-    searchGeo(geo){
+    searchGeo(geo) {
       const ps = new kakao.maps.services.Places();
-      console.log('11',kakao.maps.services)
+      console.log('11', kakao.maps.services)
       ps.keywordSearch(geo, placesSearchCB);
-      console.log('22',ps.keywordSearch)
-      const map=this.map
-      function placesSearchCB (data,status) {
-        console.log('33',map)
-        console.log('44',kakao.maps.services)
-        console.log('55',map.setBounds)
+      console.log('22', ps.keywordSearch)
+      const map = this.map
+      function placesSearchCB(data, status) {
+        console.log('33', map)
+        console.log('44', kakao.maps.services)
+        console.log('55', map.setBounds)
         if (status === kakao.maps.services.Status.OK) {
           // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
           // LatLngBounds 객체에 좌표를 추가합니다
@@ -161,11 +202,15 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #sidebar-3{
+  position: absolute;
   left: 320px;
   width: 400px;
 }
 #addMap{
+}
+.dateSelect{
+  height: 20px;
 }
 </style>
