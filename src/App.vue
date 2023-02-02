@@ -13,4 +13,15 @@
 //  text-align: center;
 //  color: #2c3e50;
 //}
+div#sidebar-1 {
+  width: 360px;
+}
+div#sidebar-2 {
+  left: 360px;
+  width: 360px;
+}
+div#sidebar-3 {
+  left: 360px;
+  width: 360px;
+}
 </style>
