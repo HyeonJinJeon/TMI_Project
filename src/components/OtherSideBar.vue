@@ -1,35 +1,34 @@
 <template>
-  <div class>
-    <b-sidebar class="mainSide" id="sidebar-1" shadow>
+  <div>
+    <b-sidebar id="sidebar-1" shadow>
       <div class="px-3 py-2">
-        <div>
-          <h4>
+        <div class="sideTitle">
+          <h3>
             {{userInfo.nickName}}'s Map
-          </h4>
+          </h3>
         </div>
-        <div>
-          <table class="table " border="1" style="margin-left: auto; margin-right: auto;">
+        <div style="width:100%; height:630px; overflow:auto; margin-top: 10px;">
+        <table class="table " border="1" style="margin-left: auto; margin-right: auto;">
             <thead>
             <tr>
             </tr>
             </thead>
             <tbody>
-            <tr @click="$emit('changeLat', memoryList.marker._lat), $emit('changeLng', memoryList.marker._long)" v-for="(memoryList,i) in memoryList" :key="i">
+            <tr @click="$emit('changeLat', memoryList.marker._lat), $emit('changeLng', memoryList.marker._long), $emit('closeModal')"
+                v-for="(memoryList,i) in memoryList" :key="i">
               <td>{{memoryList.date}}<br> {{memoryList.title}}</td>
-              <td>{{memoryList.image}}</td></tr>
+              <td><img class="img1" :src="memoryList.image" /></td>
+            </tr>
             </tbody>
           </table>
         </div>
       </div>
       <div class="px-3 py-2 dataFalse" v-if="whatData">
         <p>
-          추억을 남겨보세요
+          아직 등록하지 않았어요!
         </p>
       </div>
       <b-icon @click="goMyMap" id="sidebar_openBtn" icon="house" font-scale="1.5" class="goMypage"></b-icon>
-      <button @click="logout" class="logOutBtn btn-outline-light-blue" >
-        <b-icon icon="power" aria-hidden="true"></b-icon> Logout
-      </button>
       <MyPage></MyPage>
       <AddMemorySideBar></AddMemorySideBar>
     </b-sidebar>
@@ -37,10 +36,12 @@
 </template>
 
 <script>
+
 import {firebase} from "@/firebase/firebaseConfig";
 import AddMemorySideBar from '@/components/AddMemorySideBar.vue';
 import MyPage from '@/components/MyPage.vue';
 // import VueDaumMap from 'vue-daum-map';
+
 export default {
   name: 'mainSideBar',
   components: {AddMemorySideBar, MyPage},
@@ -117,9 +118,11 @@ export default {
           let year = date.getFullYear()
           let month = date.getMonth() + 1
           let day = date.getDate()
+
           if (notFullYear) year = year.toString().slice(2, 4)
           if (month < 10) month = `0${month}`
           if (day < 10) day = `0${day}`
+
           return `${year}${separated}${month}${separated}${day}`
         } else return '';
       }
@@ -131,7 +134,8 @@ export default {
   },
   props: {
     lat: Number,
-    long: Number
+    long: Number,
+    modal: Boolean
   },
   computed:{
     moveLat1: function (){
@@ -141,27 +145,29 @@ export default {
       return this.long1
     }
   }
+
 }
 </script>
 
-<style>
-.logOutBtn {
+<style scoped>
+.sideTitle {
   position: absolute;
-  z-index:2;
-  font-size: 15px;
-  width: 130px;
-  height: 40px;
-  left: 50%;
-  top: 95%;
+  top: 0px;
+  margin-top: 10px;
 }
 .goMypage {
   position: absolute;
   left:10px;
   top:90%;
 }
-.goAddMemory {
-  position: absolute;
-  left:120px;
-  top: 90%;
+.img1 {
+  /*width: auto; height: auto;*/
+  max-width: 100px;
+  max-height: 100px;
+  /*width: 600px;*/
+  /*height: 600px;*/
+  object-fit: cover;
 }
+
 </style>
+
