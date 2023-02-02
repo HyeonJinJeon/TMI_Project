@@ -21,9 +21,19 @@ const router = new Router({
       component: () => import('./components/MyPage.vue'),
     },
     {
+      path: '/detail',
+      name: 'detail',
+      component: () => import('./components/Detail.vue'),
+    },
+    {
       path: '/mainSideBar',
       name: 'mainSideBar',
       component: () => import('./components/MainSideBar'),
+    },
+    {
+      path: '/addMemorySideBar',
+      name: 'addMemorySideBar',
+      component: () => import('./components/AddMemorySideBar'),
     },
     {
       path: '/mainMap',
@@ -46,14 +56,24 @@ const router = new Router({
       component: () => import('./views/SignUp'),
     },
     {
+      path: '/signUp/google',
+      name: 'GoogleSignUp',
+      component: () => import('./views/GoogleSignUp'),
+    },
+    {
+      path: '/signUp/kakao',
+      name: 'KakaoSignUp',
+      component: () => import('./views/KakaoSignUp.vue'),
+    },
+    {
       path: '/otherMap',
       name: 'OtherMap',
-      component: () => import('./views/OtherMap'),
+      component: () => import('./views/OtherMap.vue'),
     },
   ]
 })
 const makeTitle = (title) =>
-    title ? `${title} | KoROM Database` : "KoROM Database";
+    title ? `${title} | TMI` : "TMI";
 
 router.afterEach((to) => {
   Vue.nextTick(() => {
