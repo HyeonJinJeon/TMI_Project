@@ -13,8 +13,8 @@
         <hr>
         <div>
           <label for="example-datepicker" class="grey-text" style="margin:10px" >날짜 선택</label>
-          <b-datepicker id="example-datepicker" v-model="date" class="mb-2 dateSelect"></b-datepicker>
-          {{date}}
+          <date-picker  v-model="date" valueType="format"></date-picker>
+          <!--          <b-datepicker id="example-datepicker" v-model="date" class="mb-2 dateSelect"></b-datepicker>-->
         </div>
         <hr>
         <label for="content" class="grey-text" style="margin:10px">위치 지정하기</label>
@@ -38,14 +38,19 @@
 </template>
 
 <script>
+
 import {firebase} from "@/firebase/firebaseConfig";
 // import * as geofire from 'geofire-common';
 // import geofire from 'geofire';
 import 'firebase/storage'
 import VueDaumMap from "vue-daum-map";
+
+import DatePicker from 'vue2-datepicker';
+import 'vue2-datepicker/index.css';
+
 export default {
   name: 'addMemorySideBar',
-  components: {VueDaumMap},
+  components: {VueDaumMap, DatePicker},
   data() {
     return {
       appkey: 'f486e714c436dbd1f7761ca8d96e43c8',
@@ -60,6 +65,7 @@ export default {
       markersInMap: [],
       geo: '',
       date: '',
+
       fbCollection: 'memory',
       userInfo: {},
       title: '',
@@ -67,8 +73,10 @@ export default {
       hash: null,
       // marker: new firebase.firestore.GeoPoint(this.lat, this.long)
       marker: {},
+
       lat: 0.0,
       long: 0.0,
+
       caption : '',
       img1: [],
       imageData: null
@@ -77,12 +85,14 @@ export default {
   mounted() {
     const self = this;
     self.init();
+
   },
   methods: {
     init() {
       const self = this;
       self.getData();
     },
+
     getData() {
       const self = this;
       const db = firebase.firestore();
@@ -123,71 +133,76 @@ export default {
             alert("저장에 실패했습니다.")
           })
     },
-    // previewImage(event) {
-    //   this.uploadValue = 0;
-    //   this.img1 = null;
-    //   this.imageData = event.target.files[0];
-    //   console.log(this.imageData)
-    //   // this.onUpload()
-    // },
     onUpload() {
-      const files = this.$refs.fileInput.files
-      for (let i = 0; i < files.length; i++) {
-        this.imageData = files[i]
-        const storageRef = firebase
-            .storage()
-            .ref(`${this.currentUser}`)
-            .child(`${this.imageData.name}`)
-            .put(this.imageData);
-        storageRef.on(`state_changed`, snapshot => {
-              this.uploadValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            }, error => {
-              console.log(error.message);
-            }, () => {
-              this.uploadValue = 100;
-              storageRef.snapshot.ref.getDownloadURL().then((url) => {
-                this.img1.push(url);
-                if(i == files.length-1){
-                  this.addMemory();
-                }
-                console.log(this.img1);
-              });
-            }
-        );
+      const files = this.$refs.fileInput.files;
+      if(files.length >= 1) {
+        const promises = [];
+        for (let i = 0; i < files.length; i++) {
+          this.imageData = files[i];
+          const storageRef = firebase
+              .storage()
+              .ref(`${this.currentUser}`)
+              .child(`${this.imageData.name}`);
+          promises.push(storageRef.put(this.imageData).then((snapshot) => {
+            return snapshot.ref.getDownloadURL();
+          }));
+        }
+        Promise.all(promises).then((urls) => {
+          this.img1 = this.img1.concat(urls);
+          this.addMemory();
+        });
+      } else {
+        this.addMemory();
       }
     },
     onLoad(map, daum) {
       this.map = map;
       this.maps = daum.map
+      setTimeout(function() {
+        console.log("111",map.relayout())
+      }, 1);
+
+
       let marker = new kakao.maps.Marker({
         position: map.getCenter()
       });
+
+
       daum.maps.event.addListener(map, 'click', (mouseEvent) => {
         marker.setMap(map);
+
         // 클릭한 위도, 경도 정보를 가져옵니다
         let latlng = mouseEvent.latLng;
+
         // 마커 위치를 클릭한 위치로 옮깁니다
         marker.setPosition(latlng);
+
         // this.changeLatLng();
         this.lat = latlng.getLat();
         this.long = latlng.getLng();
+        console.log(this.map.relayout())
         console.log(this.lat)
       });
     },
     searchGeo(geo) {
+
       const ps = new kakao.maps.services.Places();
       console.log('11', kakao.maps.services)
       ps.keywordSearch(geo, placesSearchCB);
       console.log('22', ps.keywordSearch)
       const map = this.map
+
       function placesSearchCB(data, status) {
         console.log('33', map)
         console.log('44', kakao.maps.services)
         console.log('55', map.setBounds)
+
         if (status === kakao.maps.services.Status.OK) {
+
           // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
           // LatLngBounds 객체에 좌표를 추가합니다
           const bounds = new kakao.maps.LatLngBounds();
+
           for (var i=0; i<data.length; i++) {
             bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
           }
@@ -198,7 +213,9 @@ export default {
     },
   },
   props: {
+
   }
+
 }
 </script>
 
@@ -207,10 +224,5 @@ export default {
   position: absolute;
   left: 320px;
   width: 400px;
-}
-#addMap{
-}
-.dateSelect{
-  height: 20px;
 }
 </style>
