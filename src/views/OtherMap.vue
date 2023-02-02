@@ -1,28 +1,16 @@
 <template>
   <div>
-    <div>
-      <b-navbar toggleable="lg" type="dark" style="background-color: #a3b2d6; height: 55px">
-        <b-icon v-b-toggle.sidebar-1 id="sidebar_openBtn" icon="list" font-scale="1.5" style="margin-left: 30px; color: white;" class="my-2 my-sm-0"></b-icon>
-
-        <b-navbar-brand  style="margin-left: 43%; font-weight: bold; font-size: 45px; font-family: 'Nanum Pen Script', cursive;" href="#">T . M . I</b-navbar-brand>
-
-        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-
-        <b-collapse id="nav-collapse" is-nav>
-
-          <!-- Right aligned nav items -->
-          <b-navbar-nav class="ml-auto">
-            <b-nav-form v-on:keypress.enter.prevent=searchGeo(geo)>
-              <b-form-input v-model="geo" size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-              <b-button @click="searchGeo(geo)" size="sm" class="my-2 my-sm-0" variant="outline-white">Search</b-button>
-            </b-nav-form>
-          </b-navbar-nav>
-        </b-collapse>
-      </b-navbar>
+    <div style="z-index: 100; position: absolute">
+      <transition name="fade">
+        <Detail v-if="modal" @closeModal ="modal = false" :items="items" :obj="obj" :modal="modal"/>
+      </transition>
     </div>
-    <OtherSideBar @changeLat="center.lat=$event" @changeLng="center.lng=$event" :centerLat="centerLat" :centerLng="centerLng"></OtherSideBar>
+    <div>
 
-    <!--    <b-button v-b-toggle.sidebar-1 id="sidebar_openBtn" class = "sideOpenBtn">sidebar open</b-button>-->
+    </div>
+    <OtherSideBar @changeLat="center.lat=$event" @changeLng="center.lng=$event" :centerLat="centerLat" :centerLng="centerLng" @closeModal="modal = false" :modal="modal"></OtherSideBar>
+
+<!--    <b-button v-b-toggle.sidebar-1 id="sidebar_openBtn" class = "sideOpenBtn">sidebar open</b-button>-->
     <vue-daum-map
         :appKey="appkey"
         :center.sync="center"
@@ -33,6 +21,17 @@
         style="width:100%;height:100vh;"
     >
     </vue-daum-map>
+    <button v-b-toggle.sidebar-1 id="sidebar_openBtn" class="listView">
+      <b-icon icon="list" aria-hidden="true"></b-icon>TMI
+    </button>
+    <input v-model="geo" class="geoSearch" type="text" placeholder="Search" aria-label="Search" />
+    <!--    <b-button  @click="searchGeo(geo)" class="moveBtn btn-mdb-color" >-->
+    <b-icon @click="searchGeo(geo)" icon="search" class="goSearch"></b-icon>
+    <!--    </b-button>-->
+
+    <button @click="logout" class="logOutBtn" >
+      <b-icon icon="power"></b-icon> Logout
+    </button>
 
   </div>
 </template>
@@ -41,9 +40,10 @@
 import OtherSideBar from "@/components/OtherSideBar.vue";
 import {firebase} from '@/firebase/firebaseConfig';
 import VueDaumMap from "vue-daum-map";
+import Detail from "@/components/Detail.vue";
 export default {
   name: 'mainMap',
-  components: {OtherSideBar, VueDaumMap},
+  components: {VueDaumMap, OtherSideBar, Detail },
   data() {
     return {
       appkey: 'f486e714c436dbd1f7761ca8d96e43c8',
@@ -65,12 +65,22 @@ export default {
       centerLat: 37,
       centerLng: 127,
       makerOn: false,
+      items: [],
+      modal : false,
+      obj: {},
+      otherMap: true,
     }
   },
   mounted() {
     this.getDataList()
   },
   methods: {
+    openModal() {
+      this.modal = true
+    },
+    closeModal() {
+      this.modal = false
+    },
     onLoad(map, daum) {
       this.map = map;
       this.maps = daum.map
@@ -109,10 +119,10 @@ export default {
         }
       }
     },
-    async getDataList() {
+    getDataList() {
       const self = this;
       const db = firebase.firestore();
-      await db.collection(self.fbCollection)
+      db.collection(self.fbCollection)
           .where("user.code", "==", localStorage.otherCode)
           .get()
           .then((querySnapshot) => {
@@ -122,16 +132,35 @@ export default {
             querySnapshot.forEach((doc) => {
               const _data = doc.data();
               _data.id = doc.id //각 유저 필드에 따로 id값이 없지만 유저 고유 id를 불로올 수 있음
+              const date = new Date(_data.date.seconds * 1000);
+              console.log("date",date)
               // console.log(_data.marker._lat)
               // console.log(_data.marker._long)
-              this.sendFromAppLatLngMarker(_data.marker._lat, _data.marker._long)
+              this.sendFromAppLatLngMarker(_data.marker._lat, _data.marker._long, _data)
+              _data.date = getDate(date);
+
             });
           })
+      const getDate = (date, separated = '-', notFullYear = false) => {
+        if (date instanceof Date) {
+          let year = date.getFullYear()
+          let month = date.getMonth() + 1
+          let day = date.getDate()
+
+          if (notFullYear) year = year.toString().slice(2, 4)
+          if (month < 10) month = `0${month}`
+          if (day < 10) day = `0${day}`
+
+          return `${year}${separated}${month}${separated}${day}`
+        } else return '';
+      }
     },
-    sendFromAppLatLngMarker(lat, long) {
+    sendFromAppLatLngMarker(lat, long, data) {
+      console.log("여긴가?")
       const self = this;
 // 마커가 표시될 위치입니다
       const markerPosition = new kakao.maps.LatLng(lat, long);
+      const mappingData ={};
       console.log(markerPosition)
       // const markerImageUrl = '/images/marker2.png',
       //     markerImageSize = new this.maps.Size(20, 20), // 마커 이미지의 크기
@@ -146,7 +175,31 @@ export default {
         // image: markerImage,
         position: markerPosition
       });
+      mappingData[data.id] = {marker,data}
+      const obj1 = mappingData[data.id];
+      self.items.push(mappingData[data.id])
       self.markersInMap.push(marker)
+      // 마커에 click 이벤트를 등록합니다
+      kakao.maps.event.addListener(marker, 'click', function() {
+        console.log("선택~",obj1.data.content)
+        console.log("itmes",self.items)
+
+        self.obj = {
+          content: obj1.data.content,
+          code: obj1.data.code,
+          id: obj1.data.id,
+          image: obj1.data.image,
+          title: obj1.data.title,
+          user: obj1.data.user,
+          userId: obj1.data.userId,
+          date: obj1.data.date
+        }
+        self.modal = true
+        self.openModal()
+        // }
+        // 클릭된 마커를 현재 클릭된 마커 객체로 설정합니다
+        // this.selectedMarker = marker;
+      });
     },
   },
   watch:{
@@ -158,6 +211,25 @@ export default {
 #map {
   width: 100%;
   height: 100vh;
+}
+.black-bg {
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  position: fixed; padding: 20px;
+
+}
+.white-bg {
+  width: 50%; background: white;
+  border-radius: 8px;
+  padding: 20px;
+}
+.modalShow{
+  position: absolute;
+  z-index:3;
+  width: 88px;
+  height: 35px;
+  left: 62%;
+  top: 5%;
 }
 .sideOpenBtn{
   position: absolute;
@@ -181,4 +253,66 @@ export default {
   left: 60%;
   top: 2%;
 }
+.detailView{
+  position: absolute;
+  z-index:100;
+  width: 100%;
+  height: 100vh;
+  left: 62%;
+  top: 5%;
+}
+.listView{
+  position: absolute;
+  z-index: 10;
+  background-color: #24376e;
+  border-radius: 2px;
+  width: 90px;
+  height: 38px;
+  top: 10px;
+  left:15px;
+  text-align: center;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.3);
+}
+.logOutBtn {
+  position: absolute;
+  z-index: 2;
+  font-size: 15px;
+  width: 100px;
+  height: 35px;
+  left: 94%;
+  top: 10px;
+  color: #1b375d;
+  background-color: #ffffff;
+  border-radius: 3px;
+  /*border-width: 1px;*/
+  border: none;
+  /*box-shadow: 0 5px 5px -5px #333;*/
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.3);
+
+}
+.geoSearch{
+  position:absolute;
+  z-index: 2;
+  width: 250px;
+  height: 38px;
+  border-radius: 3px;
+  top: 10px;
+  left:105px;
+  border: none;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.3);
+  /*box-shadow: 0 5px 5px -5px #333;*/
+}
+.geoSearch:focus{
+  outline: none;
+}
+.goSearch {
+  position: absolute;
+  z-index: 3;
+  top:20px;
+  left: 320px;
+}
+
 </style>
