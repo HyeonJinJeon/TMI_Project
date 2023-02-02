@@ -1,22 +1,22 @@
 <template>
-  <div style="position: relative">
-    <b-sidebar no-slide id="sidebar-2" shadow>
+  <div class="sidebar2" style="position: relative">
+    <b-sidebar no-slide class=" sidebar2" id="sidebar-2" shadow>
       <div class="px-3 py-2">
 
         <h4><b style="margin: 10px">{{userInfo.nickName}}</b></h4>
-        <b-button size="sm" @click="confirmEdit">
+        <button class="btn-mdb-color" @click="confirmEdit">
           <b-icon icon="pencil-fill" aria-hidden="true"></b-icon> Settings
-        </b-button>
-        <!--        <b-icon icon="pencil-fill" font-scale="1" @click="editInfo"></b-icon>-->
+        </button>
+<!--        <b-icon icon="pencil-fill" font-scale="1" @click="editInfo"></b-icon>-->
         <hr>
 
         <div>
           <label for="name" class="grey-text" style="margin:10px">Name</label>
           <input v-model="userInfo.name" type="text" id="name" class="form-control" >
-          <label for="name" class="grey-text" style="margin:10px">phone</label>
+          <label for="name" class="grey-text" style="margin:10px">Phone</label>
           <input v-model="userInfo.phoneNum" type="text" id="name" class="form-control">
-          <label for="name" class="grey-text" style="margin:10px">g-mail</label>
-          <input v-model="userInfo.googleId" type="text" id="name" class="form-control">
+          <label for="name" class="grey-text" style="margin:10px">로그인 방식</label>
+          <input v-model="userInfo.howLogin" type="text" id="name" class="form-control" disabled/>
         </div>
         <hr/>
 
@@ -25,7 +25,6 @@
           <div class="px-3 py-2 dataFalse" v-if="connCode">
             <div v-for = "otherCode in otherCodes" :key = "otherCode"  style="margin:10px">
               {{otherCode}} <button @click="goOtherMap(otherCode)" class="btn-outline-light-blue">입장</button>
-
             </div>
           </div>
           <div v-else>
@@ -39,7 +38,6 @@
               <input v-model="codeAdd" type="text" id="otherCode" class="form-control">
               <button class="btn-outline-light-blue" @click="codeInput" style="width: 50px;">등록</button>
             </div>
-
           </div>
           <hr/>
           <div>
@@ -54,9 +52,12 @@
 </template>
 
 <script>
+
 import {firebase} from "@/firebase/firebaseConfig";
+
 export default {
   name: 'myPage',
+
   data() {
     return {
       fbCollection: 'users',
@@ -90,20 +91,23 @@ export default {
             if(self.userInfo.otherCode.length> 1) {
               self.connCode = true
             }
-            for(var i = 0; i < self.userInfo.otherCode.length; i++) {
+            for(var i = 0; i < self.userInfo.otherCode.length; i++) {   //otherCodes에 자신의 입장코드를 제외한 다른사람들의 입장코드를 저장
               if(self.userInfo.otherCode[i] != self.userInfo.code) {
                 self.otherCodes.push(self.userInfo.otherCode[i])
               }
             }
+
           })
     },
-    confirmEdit() {
+    confirmEdit() {   //버튼 클릭시 수정된 유저정보가 firebase에 저장됨
       const self = this;
       const db = firebase.firestore();
+
       const _data = {
         name: self.userInfo.name,
         phoneNum: self.userInfo.phoneNum,
-        googleId: self.userInfo.googleId,
+        gmail: self.userInfo.gmail,
+
       }
       db.collection(self.fbCollection)
           .doc(self.userId)
@@ -112,7 +116,7 @@ export default {
             alert("수정 완료!")
           })
     },
-    codeInput() {
+    codeInput() {   //입장코드 등록 함수
       const self = this;
       const db = firebase.firestore();
       // const _data = {
@@ -134,11 +138,13 @@ export default {
                   })
             }
           })
+
     },
-    goOtherMap(otherCode){
+    goOtherMap(otherCode){    //다른사람 맵으로 이동
       localStorage.otherCode = otherCode
       this.$router.push('/otherMap')
     },
+
     // getDatalist() {
     //   const self = this;
     //   const db = firebase.firestore();
@@ -159,19 +165,25 @@ export default {
     //         });
     //       })
     // },
+
   },
+
 }
 </script>
 
-<style>
-#sidebar-2 {
-  left: 320px;
+<style scoped>
+.sidebar2 {
+  position: absolute;
   z-index:10;
   background: white;
   width: 400px;
+  margin-left: 350px;
 }
 .input-line {
   display: flex;
   height: 38px;
+}
+b-sidebar {
+  margin-left: 350px;
 }
 </style>
