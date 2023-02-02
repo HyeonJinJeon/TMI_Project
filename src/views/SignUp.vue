@@ -1,44 +1,46 @@
 <template>
-  <div class="black-bg">
-    <div class="white-bg">
-      <p class="h4 text-center mb-4">회원가입 하기</p>
-      <div>
-        <label for="defaultFormRegisterNameEx" class="grey-text">이름</label>
-        <input v-model="name" type="text" id="defaultFormRegisterNameEx" class="form-control" maxlength=10
-               @change="validateName(name)"/>
-      </div>
-      <div>
-        <label for="defaultFormRegisterNameEx" class="grey-text">닉네임</label>
-        <input v-model="nickName" type="text" id="defaultFormRegisterNameEx" class="form-control" maxlength="10"
-               @change="validateNickName(nickName)"/>
-      </div>
-      <div>
-        <label for="defaultFormRegisterConfirmEx" class="grey-text">전화번호</label>
-        <input v-model="phoneNum" type="text" id="defaultFormRegisterConfirmEx" class="form-control" maxlength="13"
-               oninput="javascript: this.value = this.value.replace(/[^0-9]/, '').replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);"/>
-      </div>
-      <div>
-        <label for="defaultFormRegisterEmailEx" class="grey-text">아이디</label>
-        <div class="input-line">
-          <input v-bind:disabled="closeInput==true" v-model="id" type="text" id="defaultFormRegisterEmailEx"
-                 class="form-control" @change="validateId(id)" placeholder="영문자+숫자 조합" />
-          <button class="btn btn-unique ImButton" type="submit" @click="overlapCheckId(id)">중복확인</button>
+  <div class="backgroundImg">
+    <div class="black-bg">
+      <div class="white-bg">
+        <p class="h4 text-center mb-4">회원가입 하기</p>
+        <div>
+          <label for="defaultFormRegisterNameEx" class="grey-text">이름</label>
+          <input v-model="name" type="text" id="defaultFormRegisterNameEx" class="form-control" maxlength=10
+                 @change="validateName(name)"/>
         </div>
-      </div>
-      <div>
-        <label for="defaultFormRegisterConfirmEx" class="grey-text">비밀번호</label>
-        <input v-model="password" type="password" id="defaultFormRegisterConfirmEx" class="form-control"
-               @change="validatePw(password)" placeholder="영문자+숫자+특수문자 조합"/>
-      </div>
-      <div>
-        <label for="defaultFormRegisterPasswordEx" class="grey-text">비밀번호 확인</label>
-        <input v-model="comparePassword" type="password" id="defaultFormRegisterPasswordEx" class="form-control"
-               @change="passwordConfirm"/>
-        <h10>{{ compare }}</h10>
-      </div>
-      <div class="text-center mt-4">
-        <button class="btn btn-unique" type="submit" @click="signup">회원가입</button>
-        <button class="btn btn-unique" type="submit" @click="goMain">뒤로가기</button>
+        <div>
+          <label for="defaultFormRegisterNameEx" class="grey-text">닉네임</label>
+          <input v-model="nickName" type="text" id="defaultFormRegisterNameEx" class="form-control" maxlength="10"
+                 @change="validateNickName(nickName)"/>
+        </div>
+        <div>
+          <label for="defaultFormRegisterConfirmEx" class="grey-text">전화번호</label>
+          <input v-model="phoneNum" type="text" id="defaultFormRegisterConfirmEx" class="form-control" maxlength="13"
+                 oninput="javascript: this.value = this.value.replace(/[^0-9]/, '').replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);"/>
+        </div>
+        <div>
+          <label for="defaultFormRegisterEmailEx" class="grey-text">아이디</label>
+          <div class="input-line">
+            <input v-bind:disabled="closeInput==true" v-model="id" type="text" id="defaultFormRegisterEmailEx"
+                   class="form-control" @change="validateId(id)" placeholder="영문자+숫자 조합" />
+            <button class="btn btn-indigo" type="submit" @click="overlapCheckId(id)" style="color: white; width: 90px; height: 35px;">중복확인</button>
+          </div>
+        </div>
+        <div>
+          <label for="defaultFormRegisterConfirmEx" class="grey-text">비밀번호</label>
+          <input v-model="password" type="password" id="defaultFormRegisterConfirmEx" class="form-control"
+                 @change="validatePw(password)" placeholder="영문자+숫자+특수문자 조합"/>
+        </div>
+        <div>
+          <label for="defaultFormRegisterPasswordEx" class="grey-text">비밀번호 확인</label>
+          <input v-model="comparePassword" type="password" id="defaultFormRegisterPasswordEx" class="form-control"
+                 @change="passwordConfirm" v-on:keypress.enter.prevent=signup>
+          <h10>{{ compare }}</h10>
+        </div>
+        <div class="text-center mt-4">
+          <button class="btn btn-indigo" type="submit" @click="signup" style="color: white;">회원가입</button>
+          <button class="btn btn-indigo" type="submit" @click="goMain" style="color: white;">뒤로가기</button>
+        </div>
       </div>
     </div>
   </div>
@@ -80,7 +82,8 @@ export default {
                       nickName: self.nickName,
                       phoneNum: self.phoneNum,
                       id: self.id,
-                      googleId: '',
+                      howLogin: '일반 로그인',
+
                       code: self.randomStr,
                       otherCode: [self.randomStr]
                     })
@@ -204,9 +207,12 @@ export default {
 }
 </script>
 
-<style>
-body {
-  background-image: url("../assets/images/bgPhoto.jpg");
+<style scoped>
+.backgroundImg {
+  background-image: url("../assets/images/startBackground.jpg");
+  background-color:rgba(0, 0, 0, 0.5);
+  height: 100vh;
+  width: 100%;
   background-size: cover;
 }
 .black-bg {
@@ -222,7 +228,7 @@ body {
   border-radius: 8px;
   padding: 50px;
   position: absolute;
-  top: 17%;
+  top: 25%;
   left: 24%;
   margin: -50px 0 0 -50px;
 }
