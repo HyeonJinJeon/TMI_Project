@@ -8,7 +8,7 @@
 
 ## 프로그램 기능 및 사용법
 - 홈페이지
-<br><a href ="tmi-project-57cdd.firebaseapp.com">TMI 구경하러가기</a>
+<br><a href ="https://tmi-project-57cdd.firebaseapp.com">TMI 구경하러가기</a>
 
 - 시작페이지
 <img width="1503" alt="스크린샷 2023-02-04 오전 12 13 42" src="https://user-images.githubusercontent.com/40857551/216638686-1f71d1d8-9907-4c87-a4e8-1e9b2142251e.png">
